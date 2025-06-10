@@ -91,12 +91,6 @@ Top-10 recommendations: [38182, 12437, 51999, 8021, 1203, 987, 4422, 10201, 7741
 
 ---
 
-## License
-
-MIT License
-
----
-
-## Credit
+## Reference
 
 Based on the [SASRec paper (2018)](https://arxiv.org/abs/1808.09781) by Amazon Research. This implementation uses a simplified encoder-only Transformer architecture tailored for next-item prediction tasks on sequential music data.
