@@ -38,30 +38,6 @@ This project implements a transformer-based sequential recommendation system (SA
 
 ---
 
-## How to Run
-
-### 1. Install Dependencies
-
-```bash
-pip install torch pytorch-lightning pandas numpy
-```
-
-### 2. Download Dataset
-
-Download `mpd.slice.0-999.json` and place it in the root folder.
-
-### 3. Train the Model
-
-```bash
-python sasrec_recommender.py
-```
-
-* Automatically converts JSON to CSV if needed
-* Trains for 5 epochs
-* Prints top-10 next-track predictions
-
----
-
 ## Sample Output
 
 ```
@@ -71,6 +47,8 @@ Top-10 recommendations: [38182, 12437, 51999, 8021, 1203, 987, 4422, 10201, 7741
 ---
 
 ## Evaluation 
+
+![image](https://github.com/user-attachments/assets/fb2beeab-084e-4087-acc0-76bdfbe49feb)
 
 * Recall\@10: 0.42
 * NDCG\@10: 0.36
