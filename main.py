@@ -8,6 +8,7 @@ from dataset import SASRecDataset
 from model import SASRec
 from evaluate import evaluate_model
 import time
+import matplotlib.pyplot as plt
 
 # Main entrypoint for running the full SASRec pipeline
 if __name__ == "__main__":
@@ -32,6 +33,9 @@ if __name__ == "__main__":
     # Time training duration
     start_time = time.time()
 
+    # Setup CSV logger to enable loss curve plotting
+    csv_logger = pl.loggers.CSVLogger("logs", name="sasrec")
+
     # Train using PyTorch Lightning Trainer
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         dirpath="checkpoints",
@@ -40,7 +44,12 @@ if __name__ == "__main__":
         monitor="train_loss",
         mode="min"
     )
-    trainer = pl.Trainer(max_epochs=5, gpus=1 if torch.cuda.is_available() else 0, callbacks=[checkpoint_callback])
+    trainer = pl.Trainer(
+        max_epochs=5,
+        gpus=1 if torch.cuda.is_available() else 0,
+        callbacks=[checkpoint_callback],
+        logger=csv_logger
+    )
     trainer.fit(model, train_loader, val_loader)
 
     # Save final model manually as backup
@@ -49,6 +58,25 @@ if __name__ == "__main__":
     end_time = time.time()
     training_duration = end_time - start_time
     print(f"Training Time: {training_duration:.2f} seconds")
+
+    # Plot training/validation loss from CSV logs
+    metrics_file = os.path.join(csv_logger.log_dir, "metrics.csv")
+    if os.path.exists(metrics_file):
+        df_metrics = pd.read_csv(metrics_file)
+        train_loss = df_metrics[df_metrics['metric'] == 'train_loss']
+        val_loss = df_metrics[df_metrics['metric'] == 'val_loss']
+
+        plt.plot(train_loss['step'], train_loss['value'], label='Train Loss')
+        plt.plot(val_loss['step'], val_loss['value'], label='Val Loss')
+        plt.xlabel("Step")
+        plt.ylabel("Loss")
+        plt.title("Training/Validation Loss")
+        plt.legend()
+        plt.grid()
+        plt.savefig("loss_curve.png")
+        plt.show()
+    else:
+        print("Metrics file not found, skipping loss curve plot.")
 
     # Run evaluation with Recall@10 and NDCG@10
     print("\nRunning Evaluation...")
@@ -61,4 +89,3 @@ if __name__ == "__main__":
         logits = model(sample_seq)
         next_item_preds = torch.topk(logits[0, -1], k=10).indices  # Top-10 predictions
     print("Top-10 recommendations:", next_item_preds.tolist())
-    
