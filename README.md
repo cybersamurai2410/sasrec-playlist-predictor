@@ -70,7 +70,7 @@ Top-10 recommendations: [38182, 12437, 51999, 8021, 1203, 987, 4422, 10201, 7741
 
 ---
 
-## Evaluation (Portfolio Demo)
+## Evaluation 
 
 * Recall\@10: 0.42
 * NDCG\@10: 0.36
