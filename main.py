@@ -6,6 +6,8 @@ import pytorch_lightning as pl
 from data_utils import parse_mpd_to_csv
 from dataset import SASRecDataset
 from model import SASRec
+from evaluate import evaluate_model
+import time
 
 # Main entrypoint for running the full SASRec pipeline
 if __name__ == "__main__":
@@ -27,9 +29,30 @@ if __name__ == "__main__":
     # Instantiate SASRec model
     model = SASRec(num_items=num_items, d_model=64, n_heads=2, num_layers=2, dropout=0.1, lr=1e-3, max_seq_len=50)
 
+    # Time training duration
+    start_time = time.time()
+
     # Train using PyTorch Lightning Trainer
-    trainer = pl.Trainer(max_epochs=5, gpus=1 if torch.cuda.is_available() else 0)
+    checkpoint_callback = pl.callbacks.ModelCheckpoint(
+        dirpath="checkpoints",
+        filename="sasrec_model",
+        save_top_k=1,
+        monitor="train_loss",
+        mode="min"
+    )
+    trainer = pl.Trainer(max_epochs=5, gpus=1 if torch.cuda.is_available() else 0, callbacks=[checkpoint_callback])
     trainer.fit(model, train_loader, val_loader)
+
+    # Save final model manually as backup
+    torch.save(model.state_dict(), "sasrec_final.pth")
+
+    end_time = time.time()
+    training_duration = end_time - start_time
+    print(f"Training Time: {training_duration:.2f} seconds")
+
+    # Run evaluation with Recall@10 and NDCG@10
+    print("\nRunning Evaluation...")
+    recall, ndcg, avg_time = evaluate_model(model, dataset, k=10)
 
     # Run inference on one sample sequence
     sample_seq, _ = dataset[0]
@@ -38,3 +61,4 @@ if __name__ == "__main__":
         logits = model(sample_seq)
         next_item_preds = torch.topk(logits[0, -1], k=10).indices  # Top-10 predictions
     print("Top-10 recommendations:", next_item_preds.tolist())
+    
