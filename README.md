@@ -1,4 +1,4 @@
-# SASRec Spotify Playlist Predictor
+# SASRec (Self-Attentive Sequential Recommendation) Spotify Playlist Predictor
 
 This project implements a transformer-based sequential recommendation system (SASRec) trained on the Spotify Million Playlist Dataset (MPD). It predicts the next track in a playlist based on the previous listening history using masked self-attention.
 
